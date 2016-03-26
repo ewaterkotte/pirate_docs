@@ -1,0 +1,119 @@
+#### Stupid MySQL tricks
+#
+
+# login
+mysql -u <root> -p
+# remote login
+mysql -u <remoteadmin> -h db1.testlab --port 3306 -p
+
+#### navigation
+show databases
+use <name>
+
+
+#### create user
+create user 'bofh'@'%' identifed with 'mysql_native_password' ;
+set password for 'bofh'@'%' = PASSWORD('SexyTime') ;
+
+
+#### rename account
+rename user 'bofh'@'%' to 'newuser'@'localhost' ;
+
+
+#### basic grant permission styles
+# usage on a specific DB
+grant usage on worpress.* to 'bofh'@'%' ;
+# another way to do fuller usage on a specific DB
+grant select,insert,update,delete,create,drop,alter on wordpress.* to 'bofh'@'%' ;
+# admin of a DB
+grant ALL on wordpress.* to 'bofh'@'%' ;
+# godmode
+grant ALL on *.* to 'bofh'@'%' ;
+
+flush privileges;
+
+
+#### show grant permissions for specific account
+show grants for 'bofh'@'%';
+
+
+#### basic revoke permission styles
+# remove a DROP perm on one db
+revoke DROP on wordpress.* from 'bofh'@'%' ;
+# remove the DEL perm universally
+revoke DELETE on *.* from 'bofh'@'%' ;
+# remove 'non observer' permissions from a specific DB
+revoke EXECUTE, INSERT, UPDATE, ALTER, ALTER ROUTINE, CREATE, CREATE USER, CREATE TEMPORARY FILES, TRIGGER, CREATE ROUTINE, SUPER, FILE, RELOAD, SHUTDOWN, DELETE, DROP on wordpress.* from 'bofh'@'%' ;
+#revoke unsafe crap on mysql DB
+revoke EXECUTE,TRIGGER, CREATE ROUTINE, SUPER, DROP, CREATE USER on mysql.* from 'bofh'@'%' ;
+# revoke all to start fresh?
+revoke ALL on *.* from 'bofh'@'%' ;
+
+flush privileges;
+
+
+#### maybe easiest to just drop user, then recreate with only the perms you want
+drop user 'bofh'@'%' ;
+create user 'bofh'@'%' identifed with 'mysql_native_password' ;
+set password for 'bofh'@'%' = PASSWORD('MoreSexyTime') ;
+grant select on wordpress.* to 'bofh'@'%' ;
+
+
+#### find users
+select user,host,password from mysql.user ;
+# raw dump style if malformed
+select * from mysql.user ;
+
+
+#### find backdoor procedures / functions / triggers
+# all
+show procedure status
+# in mysql.users (most likely target)
+show procedure status where DB = 'mysql' ;
+show function status where DB = 'mysql' ;
+show triggers status where DB = 'mysql' ;
+# what does that PROCEDURE do?
+show create procedure <name>
+show create procedure <name>
+# delete it - looks iffy
+drop procedure <name>
+drop function <name>
+drop trigger <name>
+
+
+#### Backup the databases
+# all as baseline
+mysqldump -u root -p --all-databases --routines --events --triggers --add-drop-database --add-drop-table --flush-privileges > backup-orig-full-mysql.sql
+# incremental for dbs actually used & expected to change
+mysqldump -u root -p --databases mysql > backup-today-mysql-only.sql
+mysqldump -u root -p --databases wordpress > backup-today-wordpress-only.sql
+
+
+#### Restoring from backup
+mysqldump -u root -p < dump.sql
+
+
+#### you'll never need this, but it is SQL emergency mode
+#
+#
+
+service mysql stop
+iptables -I INPUT 2 -i eth0 -p tcp -m tcp --dport 3306 -j DROP
+
+#have debian/ubuntu?
+dpkg-reconfigure mysqld-server-5.3
+#no?
+
+/usr/sbin/mysqld --skip-grant-tables --skip-networking &
+login
+flush privileges ;
+
+set password for 'root'@'localhost' = password('emergency') ;
+update mysql.user set password = password('emergency') where user='root' ;
+show procedure status ;
+show function status ;
+flush privileges ;
+exit
+
+/etc/init.d/mysql stop ; sleep 30 ; service mysql start
+iptables -D INPUT 2

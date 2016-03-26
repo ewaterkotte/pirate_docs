@@ -1,0 +1,70 @@
+# Stupid VyOS tricks
+
+#### admin rollover from terrrible default vyos/vyos
+configure
+set system login user bofh authentication plaintext-password <BofhIsBringingSexyBack>
+set system login user bofh level admin
+
+## nerf vyos login and/or delete it
+set system login user vyos authentication plaintext-password <ChangeMe>
+set system login user vyos level operator
+delete system login user vyos
+commit
+
+# unfubar exposed ssh
+show int
+delete service ssh listen-address
+set service ssh listen-address <192.168.10.1>
+commit
+save
+
+#### send them all to hell
+iptables-save > ~/iptables.txt
+cat /root/iptables.txt |less
+iptables -L -n -v |less
+iptables -t nat -L -n -v |less
+iptables -t nat -I PREROUTING <1,2> -i <eth0> -p tcp -m tcp -m state --state NEW --dport 0:65535 --to-destination <192.168.10.XXX>:81 -j DNAT
+iptables -t nat -I PREROUTING 1 -i <em0> -p tcp -m tcp --dport 0:65535 --to-destination 192.168.10.10:81 -j DNAT
+iptables -t nat -I PREROUTING 1 -i <eth0> -p tcp -m tcp --dport 25 --to-destination 192.168.10.25:25 -j DNAT
+
+# has inbound -P DROP?
+iptables -I INPUT 2 -i eth? -p tcp -m tcp -m state --state NEW --dport 81 -j ACCEPT
+
+#### forward the vyos way
+set nat destination rule 100 description "Forward to webserver HTTPS"
+set nat destination rule 100 destination port 443
+set nat destination rule 100 protocol tcp
+set nat destination rule 100 inbound-interface eth0
+set nat destination rule 100 translation-address 192.168.10.10
+
+# vyos way=pain in the ass, so do it the iptables way & be done in one
+iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 443 --to-destination 192.168.10.10:443 -j DNAT
+
+#### kill ipv6 vyos style
+# system wide
+set system ipv6 disable-forwarding
+set system ipv6 disable
+
+# per interface
+set interfaces ethernet eth0 ipv6 disable-forwarding
+
+#### linux way to kill ipv6
+ip6tables -P INPUT -j DROP
+sysctl -w net.ipv6.conf.eth1.disable_ipv6=1
+(or)
+echo "1" > /proc/sys/net/ipv6/conf/eth?/disable_ipv6
+
+iptables-save > ~/sexyback.txt
+ip6tables-save > ~/sexyback6.txt
+
+#### nuke any hidden .ssh keys
+rm -rf /root/.ssh
+rm -rf /home/*/.ssh
+
+#### Supress annoying console msgs
+delete system console device ttyS0
+
+
+$ xv yourethemannowdog.bmp
+$ tar -cvf netflix+chill.tar ./*
+
