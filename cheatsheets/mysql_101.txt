@@ -40,8 +40,8 @@ show grants for 'bofh'@'%';
 #### basic revoke permission styles
 # remove a DROP perm on one db
 revoke DROP on wordpress.* from 'bofh'@'%' ;
-# remove the DEL perm universally
-revoke DELETE on *.* from 'bofh'@'%' ;
+# remove the DEL + EVENT perm universally
+revoke DELETE, EVENT on *.* from 'bofh'@'%' ;
 # remove 'non observer' permissions from a specific DB
 revoke EXECUTE, INSERT, UPDATE, ALTER, ALTER ROUTINE, CREATE, CREATE USER, CREATE TEMPORARY FILES, TRIGGER, CREATE ROUTINE, SUPER, FILE, RELOAD, SHUTDOWN, DELETE, DROP on wordpress.* from 'bofh'@'%' ;
 #revoke unsafe crap on mysql DB
@@ -68,13 +68,14 @@ select * from mysql.user ;
 #### find backdoor procedures / functions / triggers
 # all
 show procedure status
+show events status / show events\g
 # in mysql.users (most likely target)
 show procedure status where DB = 'mysql' ;
 show function status where DB = 'mysql' ;
-show triggers status where DB = 'mysql' ;
+show triggers status where DB = 'mysql' ; 
 # what does that PROCEDURE do?
 show create procedure <name>
-show create procedure <name>
+show create trigger <name>
 # delete it - looks iffy
 drop procedure <name>
 drop function <name>
