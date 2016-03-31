@@ -1,0 +1,35 @@
+### Disable Wdigest (clear text passwords in memory)
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" /v “UseLogonCredential” /t REG_SZ /d 0 /f
+
+### delete all standard sticky-keys persistence
+
+REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\sethc.exe" /f
+REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\Utilman.exe" /f
+REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\DisplaySwitch.exe" /f
+
+
+### undo windows update lockout
+REG DELETE "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoWindowsUpdate /f
+REG DELETE "HKLM\SYSTEM\Internet Communication Management\Internet Communication" /v DisableWindowsUpdateAccess /f
+REG DELETE "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\WindowsUpdate" /v DisableWindowsUpdateAccess /f
+
+
+### undo UAC lockout
+REG DELETE "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v DisableUAC /f
+
+
+### Undo LSA degradations
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v NoLmHash /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RestrictAnonymousSAM /t REG_DWORD /d 1 /f
+REG DELETE "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LmCompatibilityLevel /f
+### Remove mimikatz skeleton key provider
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v "Security Packages" /t REG_MULTI_SZ /d "kerberos msv1_0 schannel wdigest tspkg pku2u" /f
+
+
+### Remove Windows Defender 'Exclusion Paths'
+REG DELETE "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /f
+
+
+### Add legal notice
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v LegalNoticeCaption /t REG_SZ /d "STOP HAXOR" /f
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v LegalNoticeText /t REG_SZ /d "Computer trespass is very bad, m'kay?" /f
