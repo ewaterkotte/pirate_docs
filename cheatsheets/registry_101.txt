@@ -1,8 +1,8 @@
 ### Disable Wdigest (clear text passwords in memory)
 REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" /v “UseLogonCredential” /t REG_SZ /d 0 /f
 
-### delete all standard sticky-keys persistence
 
+### delete all standard sticky-keys persistence
 REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\sethc.exe" /f
 REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\Utilman.exe" /f
 REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\DisplaySwitch.exe" /f
@@ -22,14 +22,27 @@ REG DELETE "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v D
 REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v NoLmHash /t REG_DWORD /d 1 /f
 REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RestrictAnonymousSAM /t REG_DWORD /d 1 /f
 REG DELETE "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LmCompatibilityLevel /f
+
+
 ### Remove mimikatz skeleton key provider
 REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v "Security Packages" /t REG_MULTI_SZ /d "kerberos msv1_0 schannel wdigest tspkg pku2u" /f
 
 
 ### Remove Windows Defender 'Exclusion Paths'
-REG DELETE "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /f
+REG DELETE "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /va /f
 
 
 ### Add legal notice
 REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v LegalNoticeCaption /t REG_SZ /d "STOP HAXOR" /f
 REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v LegalNoticeText /t REG_SZ /d "Computer trespass is very bad, m'kay?" /f
+
+
+### All my files are hid! grrr. unhide them
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\Folder\Hidden\NOHIDDEN" /v CheckedValue", /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\Folder\Hidden\NOHIDDEN"  /v DefaultValue", /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\Folder\Hidden\SHOWALL" /v CheckedValue", /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\Folder\Hidden\SHOWALL" /v DefaultValue", /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\Folder\SuperHidden" /v CheckedValue", /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\Folder\SuperHidden" /v DefaultValue" /t REG_DWORD /d 1 /f
+REG ADD "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoFolderOptions /t REG_DWORD /d 0 /f
+
