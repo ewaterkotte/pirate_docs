@@ -1,0 +1,60 @@
+#### Stupid Apache / Wordpress tricks
+
+
+### edit apache2.conf / site specific .conf if .htaccess is already used by wordpress (it will be)
+## Limit who can use POST methods
+
+<Directory /var/www/site>
+
+  <Limit POST>
+    Order deny,allow
+    deny from all
+    allow from 192.168.1/24
+    satisfy any
+  </Limit>
+
+</Directory>
+
+
+## quick and dirty .htaccess
+
+AuthName "Authorization Required"
+AuthType Basic
+AuthUserFile /var/www/wp-admin/.htpasswd
+AuthGroupFile /dev/null
+Require user admin
+
+## Password is: "ILikeBeans"
+echo "admin:$apr1$nbPO77Wk$/fpmWEkOVk7qBNmxV6Bwm/" >> /var/www/wp-admin/.htpasswd
+chomd 600 /var/www/wp-admin/.htpasswd
+
+## but you really should use:
+## apt-get install apache2-utils ; htpasswd -c /var/www/wp-admin/.htpasswd admin ; chown www-data:www-data /var/www/wp-admin/.htpasswd
+
+## some wordpress stuff
+# nope to get wp-config requests
+<files wp-config.php>
+  order allow,deny
+  deny from all
+</files>
+
+# yes to any ajax requests (if limited by previously created .htaccess/.htpasswd otherwise)
+<files admin-ajax.php>
+    order allow,deny
+    allow from all
+    satisfy any 
+</files>
+
+
+## disable the wordpress file editor
+echo "define('DISALLOW_FILE_EDIT', true);" >> /var/www/wp-config.php
+
+
+## rollover to apache HTTPS, ubuntu / debian
+a2enmod ssl
+mkdir /etc/apache2/certs
+openssl req -x509 -nodes -days 90 -newkey rsa:2048 -keyout /etc/apache2/certs/https.key -out /etc/apache2/certs/https.crt -subj "/C=US/ST=Washington/L=Port Angeles/O=Pencol CyberSecurity/OU=IT/CN=mydomain.com"
+cp /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/my-ssl.conf
+vim /etc/apache2/sites-available/my-ssl.conf
+a2ensite my-ssl.conf
+service apache2 restart

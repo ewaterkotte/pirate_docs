@@ -37,6 +37,12 @@ flush privileges;
 show grants for 'bofh'@'%';
 
 
+#### minimum permissions required for wordpress user account
+grant select,insert,update,delete on wordpress.* to 'wp_user'@'%' ;
+#### but in order to use auto-update, it will need
+grant select,insert,update,delete,create,alter on wordpress.* to 'wp_user'@'%' ;
+
+
 #### basic revoke permission styles
 # remove a DROP perm on one db
 revoke DROP on wordpress.* from 'bofh'@'%' ;
@@ -56,7 +62,7 @@ flush privileges;
 drop user 'bofh'@'%' ;
 create user 'bofh'@'%' identifed with 'mysql_native_password' ;
 set password for 'bofh'@'%' = PASSWORD('MoreSexyTime') ;
-grant select on wordpress.* to 'bofh'@'%' ;
+grant select,insert,update,delete on wordpress.* to 'bofh'@'%' ;
 
 
 #### find users

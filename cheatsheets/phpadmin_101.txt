@@ -1,0 +1,31 @@
+#### Stupid phpmyadmin tricks
+
+# change default location, edit /etc/phpmyadmin/apache.conf
+
+Alias /hidden_myadmin /usr/share/phpmyadmin
+
+# restrict ip acesss, apache way in <Directory> </Directory> section of .conf
+
+    Order deny,allow
+    deny from all
+    allow from 192.168.1/24
+    satisfy any
+
+
+# or edit the /etc/phpmyadmin/config.php
+
+$cfg['Servers'][$i]['AllowDeny']['order'] = 'deny,allow';
+$cfg['Servers'][$i]['AllowDeny']['rules'] = array(
+    'deny % from all', // deny everyone by default, then -
+
+    'allow % from 127.0.0.1', // allow all local users
+
+    //'allow % from SERVER_ADDRESS', // allow all from server IP
+
+    // allow user:root access from these locations (local network)
+    'allow root from localhost',
+    'allow root from 192.168.0.0/16',
+   
+    );
+    
+
